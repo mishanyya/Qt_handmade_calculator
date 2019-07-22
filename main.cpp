@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include <QApplication>
 
+#include <QDialogButtonBox>
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -8,7 +10,7 @@ int main(int argc, char *argv[])
     w.show();
 
 
-
+QDialogButtonBox::Ok;
 
 
     return a.exec();

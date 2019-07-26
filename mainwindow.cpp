@@ -1,6 +1,24 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QApplication>  //подключает класс для работы с QApplication, добавляется обязательно !!!
+
+#include <QAbstractButton>//
+#include <QWidget>        //
+#include <QPushButton>      //подключает класс для работы с кнопками, добавляется при необходимости!
+#include <QProgressBar>     //подключает класс для работы с QProgressBar, добавляется при необходимости!
+#include <QSlider>          //подключает класс для работы с QSlider, добавляется при необходимости!
+#include <QLineEdit>        //подключает класс для работы с полем для ввода текста, добавляется при необходимости!
+#include <QLabel>           //подключает класс для работы с полем для показа какой-либо информации, добавляется при необходимости!
+#include <QValidator>       //подключает класс для фильтра значений, добавляется при необходимости!
+#include <QDoubleValidator> //подключает класс для фильтра числовых значений типа double, добавляется при необходимости!
+#include <QRegExpValidator> //подключает класс для фильтра значений через регулярные выражения, добавляется при необходимости!
+
+
+
+
+
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -11,7 +29,21 @@ MainWindow::MainWindow(QWidget *parent) :
    connect(ui->pushButton_3, SIGNAL(clicked()), this, SLOT(multiplySlot()));//\*
    connect(ui->pushButton_4, SIGNAL(clicked()), this, SLOT(divideSlot()));//\/
    connect(ui->pushButton_5, SIGNAL(clicked()), this, SLOT(equallySlot()));//\=
-}
+
+
+//разрешен только ввод чисел в поле ввода lineEdit
+   QRegExp rx("-?\\d{1,}");//установка регулярного выражения rx("-?\\d{1,3}")
+   QValidator *my_Validator = new QRegExpValidator(rx,this);//создание нового объекта QValidator
+   ui->lineEdit->setValidator(my_Validator);//подключение регулярного выражения к текстовому полю lineEdit
+
+   /*
+d{1,3}-разрешен ввод только цифр, в количестве от одной до трех
+d-разрешен ввод только одной цифры
+d{1,}-разрешен ввод не менее одной цифры
+d{,5}-разрешен ввод до пяти цифр
+*/
+
+   }
 
 MainWindow::~MainWindow()
 {
@@ -25,6 +57,7 @@ MainWindow::~MainWindow()
 3)вводим другое число,
 4)нажимаем знак равно эти два числа высчитываются с учетом знака,
 5)при этом должны вводиться только цифры и точка
+6)поле ввода становится активным перед вводом каждого числа
 
 objectName:
 lineEdit     - это поле для ввода чисел
@@ -37,56 +70,57 @@ pushButton_5 - это знак =
 Переменные:
 первое значение - firstvalue
 второе значение - secondvalue
-результат значение - resultvalue
-для арифметических знаков - sign
-для знака равенства - signequally
-
-QString объект для работы с данными
-lineEdit,lineEdit_2 и другие значения- это objectName для каждого из этих элементов
+результат - result
+арифметические знаки - sign
 */
 
-float firstvalue;//первое введенное значение
-QString sign;//знак арифметического действия
-float res;//результат
+static float firstvalue;//первое введенное значение, пишется static, так как получает значение внутри другой функции
+static QString sign;//знак арифметического действия, пишется static, так как получает значение внутри другой функции
 
 void MainWindow::addSlot()
 {
-     ::firstvalue= ui->lineEdit->text().toFloat(); // получаем первое значение QLineEdit
+   ui->lineEdit->setFocus();//сделать поле ввода  активным
+   ::firstvalue= ui->lineEdit->text().toFloat(); // получаем первое значение QLineEdit
    ::sign = ui->pushButton->text(); // получаем строку из кнопки pushButton +
-
+ui->lineEdit->setFocus();//сделать поле ввода  активным
+ui->lineEdit->setText(nullptr);//удалить данные из поля ввода
 }
 
 void MainWindow::subtractSlot()
-{
-     ::firstvalue = ui->lineEdit->text().toFloat(); // получаем первое значение QLineEdit
-   ::sign = ui->pushButton_2->text(); // получаем строку из кнопки pushButton -
+{   
 
+    ui->lineEdit->setFocus();//сделать поле ввода  активным
+    ::firstvalue = ui->lineEdit->text().toFloat(); // получаем первое значение QLineEdit
+   ::sign = ui->pushButton_2->text(); // получаем строку из кнопки pushButton -
+    ui->lineEdit->setFocus();//сделать поле ввода  активным
+    ui->lineEdit->setText(nullptr);//удалить данные из поля ввода
 }
 
 void MainWindow::multiplySlot()
 {
-     ::firstvalue = ui->lineEdit->text().toFloat(); // получаем первое значение QLineEdit
-   ::sign = ui->pushButton_3->text(); // получаем строку из кнопки pushButton *
 
+    ui->lineEdit->setFocus();//сделать поле ввода  активным
+    ::firstvalue = ui->lineEdit->text().toFloat(); // получаем первое значение QLineEdit
+   ::sign = ui->pushButton_3->text(); // получаем строку из кнопки pushButton *
+    ui->lineEdit->setFocus();//сделать поле ввода  активным
+    ui->lineEdit->setText(nullptr);//удалить данные из поля ввода
 }
 
 void MainWindow::divideSlot()
 {
-     ::firstvalue = ui->lineEdit->text().toFloat(); // получаем первое значение QLineEdit
-   ::sign = ui->pushButton_4->text(); // получаем строку из кнопки pushButton /
 
+    ui->lineEdit->setFocus();//сделать поле ввода  активным
+    ::firstvalue = ui->lineEdit->text().toFloat(); // получаем первое значение QLineEdit
+   ::sign = ui->pushButton_4->text(); // получаем строку из кнопки pushButton /
+    ui->lineEdit->setFocus();//сделать поле ввода  активным
+    ui->lineEdit->setText(nullptr);//удалить данные из поля ввода
 }
 
 void MainWindow::equallySlot()
 {
-    float res;
     float secondvalue = ui->lineEdit->text().toFloat(); // получаем второе значение QLineEdit
+    float res;//результат, пишется extern, так как получает значение внутри другой функции
 
-   //QString res= (::firstvalue)+(::sign)+(secondvalue);
-    //QString signequally = ui->pushButton_5->text(); // получаем строку из кнопки pushButton
-    //действия взависимости от знака:
-
-    //str.setNum(::sign);//переводит численное значение в текст
 
     if(::sign=='+') {
         res=(::firstvalue)+secondvalue;
@@ -97,7 +131,7 @@ void MainWindow::equallySlot()
     else if (::sign=='*') {
         res=(::firstvalue)*secondvalue;
     }
-    else if (::sign=='/') {
+    else/* if (::sign=='/')*/ {
         res=(::firstvalue)/secondvalue;
     }
 

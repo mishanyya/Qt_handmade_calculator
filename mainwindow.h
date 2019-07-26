@@ -3,12 +3,6 @@
 
 #include <QMainWindow>
 
-#include <QAbstractButton>
-
-#include <QPushButton>
-#include <QWidget>
-#include <QLabel>
-
 namespace Ui {
 class MainWindow;
 }
@@ -28,12 +22,8 @@ private slots:
     void divideSlot(); // это созданный нами слот для /
     void equallySlot(); // это созданный нами слот для =
 
-
 private:
     Ui::MainWindow *ui;
 };
-
-
-
 
 #endif // MAINWINDOW_H

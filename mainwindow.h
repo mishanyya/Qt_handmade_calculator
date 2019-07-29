@@ -16,11 +16,11 @@ public:
     ~MainWindow();
 
 private slots:
-    void addSlot(); // это созданный нами слот для +
-    void subtractSlot(); // это созданный нами слот для -
-    void multiplySlot(); // это созданный нами слот для *
-    void divideSlot(); // это созданный нами слот для /
-    void equallySlot(); // это созданный нами слот для =
+    void addSlot(); // это созданный нами слот для операции +
+    void subtractSlot(); // это созданный нами слот для операции -
+    void multiplySlot(); // это созданный нами слот для операции *
+    void divideSlot(); // это созданный нами слот для операции /
+    void equallySlot(); // это созданный нами слот для операции =
 
 private:
     Ui::MainWindow *ui;

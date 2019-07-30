@@ -22,6 +22,8 @@ private slots:
     void divideSlot(); // это созданный нами слот для операции /
     void equallySlot(); // это созданный нами слот для операции =
 
+void symbolSlot(); // это созданный нами слот для обращения к кнопке
+
 private:
     Ui::MainWindow *ui;
 };

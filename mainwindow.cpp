@@ -16,7 +16,7 @@
 //#include <QtMath>           //подключает класс для математических функций
 #include <QKeyEvent>          //подключает класс для получения данных с клавиатуры
 #include <QDebug>             //
-
+#include <QTextEdit>        //подключает класс для работы с полем для ввода текста, добавляется при необходимости!
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -24,30 +24,28 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-   connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(addSlot()));         //для сложения
-   connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(subtractSlot()));  //для вычитания
-   connect(ui->pushButton_3, SIGNAL(clicked()), this, SLOT(multiplySlot()));  //для умножения
-   connect(ui->pushButton_4, SIGNAL(clicked()), this, SLOT(divideSlot()));    //для деления
-   connect(ui->pushButton_5, SIGNAL(clicked()), this, SLOT(equallySlot()));   //для получения результата
 
-   connect(ui->pushButton_6, SIGNAL(clicked()), this, SLOT(symbolSlot())); //для работы с кнопкой
+    connect(ui->lineEdit, SIGNAL(editingFinished()), this, SLOT(forValueSlot()));//для сохранения значения после редактирования и нажатия любой кнопки
+    connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(forAllMovieSlot()));         //для сложения
+    connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(forAllMovieSlot()));  //для вычитания
+    connect(ui->pushButton_3, SIGNAL(clicked()), this, SLOT(forAllMovieSlot()));  //для умножения
+    connect(ui->pushButton_4, SIGNAL(clicked()), this, SLOT(forAllMovieSlot()));    //для деления
+    connect(ui->pushButton_5, SIGNAL(clicked()), this, SLOT(forResultSlot()));   //для получения результата
+
+
+    connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(forTextEditResultSlot()));     //для получения промежуточного результата
+    connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(forTextEditResultSlot()));   //для получения промежуточного результата
+    connect(ui->pushButton_3, SIGNAL(clicked()), this, SLOT(forTextEditResultSlot()));   //для получения промежуточного результата
+    connect(ui->pushButton_4, SIGNAL(clicked()), this, SLOT(forTextEditResultSlot()));   //для получения промежуточного результата
+    connect(ui->pushButton_5, SIGNAL(clicked()), this, SLOT(forTextEditResultSlot()));   //для получения промежуточного результата
 
 
    //сделать поле ввода  активным при запуске программы
 ui->lineEdit->setFocus();
-//ui->lineEdit->clearFocus();//убрать фокус из поля ввода
-/*
-
-//разрешен только ввод чисел согласно регулярному выражению в поле ввода lineEdit
-   QRegExp rx("-?\\d+([.]\\d{0,})?");//
-   QValidator *my_Validator = new QRegExpValidator(rx,this);//создание нового объекта QValidator
-   ui->lineEdit->setValidator(my_Validator);//подключение регулярного выражения к текстовому полю lineEdit
-   */
 
    //разрешен только ввод чисел типа double или int
       QDoubleValidator *my_Validator = new QDoubleValidator();//создание нового объекта QDoubleValidator
       ui->lineEdit->setValidator(my_Validator);//подключение регулярного выражения к текстовому полю lineEdit
-
 
      //можно указать название, а можно номер из enum Qt::Key, но не все клавиши срабатывают, потому что надо смотреть это Unicode или ANSII
 
@@ -57,23 +55,31 @@ ui->lineEdit->setFocus();
       ui->pushButton_4->setShortcut(Qt::Key_Slash);//при нажатии клавиши клавиатуры Return будет срабатывать кнопка / с objectName pushButton_4
       ui->pushButton_5->setShortcut(Qt::Key_Return);//при нажатии клавиши клавиатуры Return будет срабатывать кнопка Enter с objectName pushButton_5
 
-
 }
-
-
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
 
-
 /*
  Алгоритм работы:
-1)вводим число,
-2)нажимаем на знак, это число и знак сохраняются,
-3)вводим другое число,
-4)нажимаем знак равно, эти два числа высчитываются с учетом знака,
+1)получаем фокус
+2)вводим первое число,
+3)нажимаем на один из знаков + - * / это число и знак сохраняются,
+3.1)нажимаем + первое число=первое число+другое число
+3.1.1)получаем фокус
+3.2)нажимаем + первое число=первое число+другое число
+3.2.1)получаем фокус
+3.3)нажимаем + первое число=первое число+другое число
+3.3.1)получаем фокус
+3.4)нажимаем + первое число=первое число+другое число
+3.4.1)получаем фокус
+3.5)нажимаем = получаем первое число
+
+
+
+
 
 Требования:
 1)при этом должны вводиться только цифры и точка
@@ -95,75 +101,96 @@ pushButton_5 - это знак =
 Переменные:
 первое значение - firstvalue
 второе значение - secondvalue
-результат - result
 арифметические знаки - sign
 */
 
 
-
-
-
-static double firstvalue;//первое введенное значение, пишется static, так как получает значение внутри другой функции
-static double secondvalue;//второе введенное значение, пишется static, так как получает значение внутри другой функции
-static double res;//результат
+static double insertvalue;//значение, введенное в editText, пишется static, так как получает значение внутри другой функции
+static double insertvalue_2;//следующее значение, введенное в editText, пишется static, так как получает значение внутри другой функции
+static double resultvalue;//введенное значение для хранения результата, пишется static, так как получает значение внутри другой функции
 static QString sign;//знак арифметического действия, пишется static, так как получает значение внутри другой функции
 
-
-
-void MainWindow::addSlot()
+void MainWindow::forValueSlot()//поместить значение в поле
 {
-   ::firstvalue= ui->lineEdit->text().toDouble(); // получаем первое значение QLineEdit
-   ::sign = ui->pushButton->text(); // получаем строку из кнопки pushButton +
-
-ui->lineEdit->setText(nullptr);//удалить данные из поля ввода
-ui->lineEdit->setFocus();//сделать поле ввода  активным*/
+      insertvalue=ui->lineEdit->text().toDouble();//поместить значение в firstvalue и сделать ее тип double
 }
 
-void MainWindow::subtractSlot()
-{   
-   ::firstvalue= ui->lineEdit->text().toDouble(); // получаем первое значение QLineEdit
-   ::sign = ui->pushButton_2->text(); // получаем строку из кнопки pushButton -
 
-   ui->lineEdit->setText(nullptr);//удалить данные из поля ввода
-   ui->lineEdit->setFocus();//сделать поле ввода  активным
+void MainWindow::forAllMovieSlot()
+{
+    QPushButton *buttonSender = qobject_cast<QPushButton *>(sender()); // помещение в указатель buttonSender объекта отправителя
+        QString buttonText = buttonSender->text();// помещение в buttonText текст отправителя, на который был создан указатель
+        sign=buttonText;//получение знака действия
+
+        if(sign=='+') {
+            insertvalue=resultvalue+insertvalue;
+        }
+        else if (::sign=='-') {
+            insertvalue=resultvalue-insertvalue;
+        }
+        else if (::sign=='*') {
+
+            if(resultvalue==0){resultvalue=1;}
+            insertvalue=resultvalue*insertvalue;
+
+        }
+        else if(::sign=='/'){
+            if(resultvalue==insertvalue){
+            resultvalue=resultvalue/insertvalue;
+            }
+
+               resultvalue=insertvalue;
+
+        }
+
+        resultvalue=insertvalue;
+        ui->lineEdit->setText(nullptr);
+        ui->lineEdit->setFocus();
+
 }
 
-void MainWindow::multiplySlot()
-{
-    ::firstvalue= ui->lineEdit->text().toDouble(); // получаем первое значение QLineEdit
-   ::sign = ui->pushButton_3->text(); // получаем строку из кнопки pushButton *
+void MainWindow::forResultSlot(){
 
-   ui->lineEdit->setText(nullptr);//удалить данные из поля ввода
-    ui->lineEdit->setFocus();//сделать поле ввода  активным
-}
-
-void MainWindow::divideSlot()
-{
-   ::firstvalue= ui->lineEdit->text().toDouble(); // получаем первое значение QLineEdit
-   ::sign = ui->pushButton_4->text(); // получаем строку из кнопки pushButton /
-
-   ui->lineEdit->setText(nullptr);//удалить данные из поля ввода
-    ui->lineEdit->setFocus();//сделать поле ввода  активным
-}
-
-void MainWindow::equallySlot()
-{
-    secondvalue = ui->lineEdit->text().toDouble(); // получаем второе значение QLineEdit
-
-    if(::sign=='+') {
-        res=(::firstvalue)+secondvalue;
+    if(sign=='+') {
+        resultvalue=resultvalue+insertvalue;
     }
     else if (::sign=='-') {
-        res=(::firstvalue)-secondvalue;
+        resultvalue=resultvalue-insertvalue;
     }
     else if (::sign=='*') {
-        res=(::firstvalue)*secondvalue;
+        if(resultvalue==0){resultvalue=1;}
+        resultvalue=resultvalue*insertvalue;
+    }
+    else if(::sign=='/'){
+        if((insertvalue>0)|(insertvalue<0)){
+
+            resultvalue=resultvalue/insertvalue;
+
+        }
+        else resultvalue=0;
     }
     else {
-        if((secondvalue>0)|(secondvalue<0)){
-         res=(::firstvalue)/secondvalue;}
-        else res=0;
     }
 
-   ui->lineEdit->setText(QString::number(res));//показ результата в текстовом поле
+   insertvalue=0;
+   ui->lineEdit->setText(QString::number(resultvalue));//показ результата в текстовом поле
+
+
 }
+
+void MainWindow::forTextEditResultSlot()//для получения промежуточного результата в текстовом поле
+{
+
+      ui->textEdit->setText("insertvalue ввел = "+QString::number(insertvalue)+"\n"+"insertvalue_2 ввел = "+QString::number(insertvalue)+"\n"+"resultvalue результат = "+QString::number(resultvalue)+"\n");//показ промежуточного результата в текстовом поле
+}
+
+
+/*
+QObject *obj = new QTimer;          // QTimer inherits QObject
+
+QTimer *timer = qobject_cast<QTimer *>(obj);
+// timer == (QObject *)obj
+
+QAbstractButton *button = qobject_cast<QAbstractButton *>(obj);
+// button == 0
+*/

@@ -15,14 +15,11 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-private slots:
-    void addSlot(); // это созданный нами слот для операции +
-    void subtractSlot(); // это созданный нами слот для операции -
-    void multiplySlot(); // это созданный нами слот для операции *
-    void divideSlot(); // это созданный нами слот для операции /
-    void equallySlot(); // это созданный нами слот для операции =
-
-void symbolSlot(); // это созданный нами слот для обращения к кнопке
+private slots:  
+    void forValueSlot(); // это созданный нами слот для ввода первого значения
+    void forAllMovieSlot(); // это созданный нами слот для всех операций
+    void forResultSlot(); // это созданный нами слот для получения результата
+    void forTextEditResultSlot(); // это созданный нами слот для получения промежуточного результата
 
 private:
     Ui::MainWindow *ui;

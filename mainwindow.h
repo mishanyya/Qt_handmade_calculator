@@ -20,6 +20,7 @@ private slots:
     void forAllMovieSlot(); // это созданный нами слот для всех операций
     void forResultSlot(); // это созданный нами слот для получения результата
     void forTextEditResultSlot(); // это созданный нами слот для получения промежуточного результата
+    void forTextReset(); // это созданный нами слот для обнуления данных
 
 private:
     Ui::MainWindow *ui;

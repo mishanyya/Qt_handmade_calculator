@@ -95,8 +95,21 @@
       <x>70</x>
       <y>230</y>
       <width>431</width>
-      <height>70</height>
+      <height>111</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_6">
+    <property name="geometry">
+     <rect>
+      <x>360</x>
+      <y>160</y>
+      <width>89</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Сброс</string>
     </property>
    </widget>
   </widget>

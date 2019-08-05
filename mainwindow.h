@@ -21,7 +21,7 @@ private slots:
     void forResultSlot(); // это созданный нами слот для получения результата
     void forTextEditResultSlot(); // это созданный нами слот для получения промежуточного результата
     void forTextReset(); // это созданный нами слот для обнуления данных
-
+    void forSymbolEnter(); // это созданный нами слот для ввода цифр в текстовое поле
 private:
     Ui::MainWindow *ui;
 };

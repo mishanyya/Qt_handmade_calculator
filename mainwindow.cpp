@@ -32,7 +32,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButton_4, SIGNAL(clicked()), this, SLOT(forAllMovieSlot()));    //для арифметической операции
     connect(ui->pushButton_5, SIGNAL(clicked()), this, SLOT(forResultSlot()));   //для получения результата
 
-
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(forTextEditResultSlot()));     //для получения промежуточного результата
     connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(forTextEditResultSlot()));   //для получения промежуточного результата
     connect(ui->pushButton_3, SIGNAL(clicked()), this, SLOT(forTextEditResultSlot()));   //для получения промежуточного результата
@@ -42,22 +41,31 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->pushButton_6, SIGNAL(clicked()), this, SLOT(forTextReset()));   //для сброса
 
+    //сделать поле ввода  активным при запуске программы
+    ui->lineEdit->setFocus();
+
+    //разрешен только ввод чисел типа double или int
+    QDoubleValidator *my_Validator = new QDoubleValidator();//создание нового объекта QDoubleValidator
+    ui->lineEdit->setValidator(my_Validator);//подключение регулярного выражения к текстовому полю lineEdit
+
+    //можно указать название, а можно номер из enum Qt::Key, но не все клавиши срабатывают, потому что надо смотреть это Unicode или ANSII
+    ui->pushButton->setShortcut(Qt::Key_Plus);//при нажатии клавиши клавиатуры Return будет срабатывать кнопка + с objectName pushButton
+    ui->pushButton_2->setShortcut(Qt::Key_Minus);//при нажатии клавиши клавиатуры Return будет срабатывать кнопка - с objectName pushButton_2
+    ui->pushButton_3->setShortcut(Qt::Key_Asterisk);//при нажатии клавиши клавиатуры Return будет срабатывать кнопка * с objectName pushButton_3
+    ui->pushButton_4->setShortcut(Qt::Key_Slash);//при нажатии клавиши клавиатуры Return будет срабатывать кнопка / с objectName pushButton_4
+    ui->pushButton_5->setShortcut(Qt::Key_Return);//при нажатии клавиши клавиатуры Return будет срабатывать кнопка Enter с objectName pushButton_5
 
 
-   //сделать поле ввода  активным при запуске программы
-ui->lineEdit->setFocus();
-
-   //разрешен только ввод чисел типа double или int
-      QDoubleValidator *my_Validator = new QDoubleValidator();//создание нового объекта QDoubleValidator
-      ui->lineEdit->setValidator(my_Validator);//подключение регулярного выражения к текстовому полю lineEdit
-
-     //можно указать название, а можно номер из enum Qt::Key, но не все клавиши срабатывают, потому что надо смотреть это Unicode или ANSII
-
-      ui->pushButton->setShortcut(Qt::Key_Plus);//при нажатии клавиши клавиатуры Return будет срабатывать кнопка + с objectName pushButton
-      ui->pushButton_2->setShortcut(Qt::Key_Minus);//при нажатии клавиши клавиатуры Return будет срабатывать кнопка - с objectName pushButton_2
-      ui->pushButton_3->setShortcut(Qt::Key_Asterisk);//при нажатии клавиши клавиатуры Return будет срабатывать кнопка * с objectName pushButton_3
-      ui->pushButton_4->setShortcut(Qt::Key_Slash);//при нажатии клавиши клавиатуры Return будет срабатывать кнопка / с objectName pushButton_4
-      ui->pushButton_5->setShortcut(Qt::Key_Return);//при нажатии клавиши клавиатуры Return будет срабатывать кнопка Enter с objectName pushButton_5
+    /*ui->pushButton_7->setShortcut(Qt::Key_1);
+    ui->pushButton_8->setShortcut(Qt::Key_2);
+    ui->pushButton_9->setShortcut(Qt::Key_3);
+    ui->pushButton_10->setShortcut(Qt::Key_4);
+    ui->pushButton_11->setShortcut(Qt::Key_5);
+    ui->pushButton_12->setShortcut(Qt::Key_6);
+    ui->pushButton_13->setShortcut(Qt::Key_7);
+    ui->pushButton_14->setShortcut(Qt::Key_8);
+    ui->pushButton_15->setShortcut(Qt::Key_9);
+    ui->pushButton_16->setShortcut(Qt::Key_0);*/
 
 }
 
@@ -67,24 +75,6 @@ MainWindow::~MainWindow()
 }
 
 /*
- Алгоритм работы:
-1)получаем фокус
-2)вводим первое число,
-проверяем есть ли знак в памяти
-3)нажимаем на один из знаков + - * / это число и знак сохраняются,
-3.1)нажимаем + первое число=первое число+другое число
-3.1.1)получаем фокус
-3.2)нажимаем + первое число=первое число+другое число
-3.2.1)получаем фокус
-3.3)нажимаем + первое число=первое число+другое число
-3.3.1)получаем фокус
-3.4)нажимаем + первое число=первое число+другое число
-3.4.1)получаем фокус
-3.5)нажимаем = получаем первое число
-
-
-
-
 
 Требования:
 1)при этом должны вводиться только цифры и точка
@@ -109,81 +99,156 @@ pushButton_5 - это знак =
 арифметические знаки - oldsign,sign
 */
 
+static double previousvalue;//сохраненное предыдущее значение, не выводится в editText, пишется static
+static double insertvalue;//значение, введенное в editText, пишется static, так как работает внутри другой функции
+static double resultvalue;//введенное значение для хранения результата, пишется static, так как работает внутри другой функции
 
-static double insertvalue;//значение, введенное в editText, пишется static, так как получает значение внутри другой функции
-static double resultvalue;//введенное значение для хранения результата, пишется static, так как получает значение внутри другой функции
+static QString oldsign;//предыдущий знак арифметического действия, пишется static, так как работает внутри другой функции
 static QString sign;//знак арифметического действия, пишется static, так как получает значение внутри другой функции
-static QString oldsign;//предыдущий знак арифметического действия, пишется static, так как получает значение внутри другой функции
+
+static int countclick=0;//количество раз, нажатых на кнопки арифметических действий, пишется static, так как работает внутри другой функции
+
 
 void MainWindow::forValueSlot()//поместить значение в поле
 {
-
-}
-
-
-void MainWindow::forResultSlot(){
-
-   ui->lineEdit->setText(QString::number(resultvalue));//показ результата в текстовом поле
+    oldsign=sign;
 }
 
 void MainWindow::forAllMovieSlot()
 {
-    insertvalue=ui->lineEdit->text().toDouble();//поместить значение в firstvalue и сделать ее тип double
-
    QPushButton *buttonSender = qobject_cast<QPushButton *>(sender()); // помещение в указатель buttonSender объекта отправителя
         QString buttonText = buttonSender->text();// помещение в buttonText текст отправителя, на который был создан указатель
-        oldsign=sign;
-        sign=buttonText;//получение знака действия
-    //
-    if(sign=='+') {
-        resultvalue=resultvalue+insertvalue;
-    }
-    else if (sign=='-') {
-        resultvalue=resultvalue-insertvalue;
-    }
-    else if (sign=='*') {
-        if(resultvalue==0){resultvalue=1;}
-        resultvalue=resultvalue*insertvalue;
-    }
-    else if(sign=='/'){
-        if((insertvalue>0)|(insertvalue<0)){
-            resultvalue=resultvalue/insertvalue;
+
+        if(countclick==0){//самое первое введенное значение
+            previousvalue=ui->lineEdit->text().toDouble();//поместить значение в previousvalue и сделать ее тип double
         }
-        else if(sign=="Сброс"){
-           resultvalue=insertvalue=0;
-            }
-        else resultvalue=0;
+        else{//остальные введенные значения
+            insertvalue=ui->lineEdit->text().toDouble();//поместить значение в previousvalue и сделать ее тип double
+        }
+
+        sign=buttonText;//получение знака действия
+
+    /*отсюда начинаются арифметические операции*/
+    if(oldsign=='+') {
+        if(countclick==1){//самое первое введенное значение
+            resultvalue=previousvalue+insertvalue;//самое первое действие
+        }
+        else{//остальные введенные значения
+            resultvalue=resultvalue+insertvalue;//остальные действия
+        }
     }
+
+    else if (oldsign=='-') {
+        if(countclick==1){//самое первое введенное значение
+            resultvalue=previousvalue-insertvalue;//самое первое действие
+        }
+        else{//остальные введенные значения
+            resultvalue=resultvalue-insertvalue;//остальные действия
+        }
+    }
+
+    else if (oldsign=='*') {
+        if(countclick==1){//самое первое введенное значение
+            resultvalue=previousvalue*insertvalue;//самое первое действие
+        }
+        else{//остальные введенные значения
+            resultvalue=resultvalue*insertvalue;//остальные действия
+        }
+    }
+
+    else if(oldsign=='/'){
+        if(countclick==1){//самое первое введенное значение
+            resultvalue=previousvalue/insertvalue;//самое первое действие
+        }
+        else{//остальные введенные значения
+            resultvalue=resultvalue/insertvalue;//остальные действия
+        }
+    }
+
     else {;
     }
-    //
-    //insertvalue=0;
-    //ui->lineEdit->setText(QString::number(resultvalue));//показ результата в текстовом поле
+    /*здесь заканчиваются арифметические операции*/
+
+    countclick++;
     ui->lineEdit->setText("");
     ui->lineEdit->setFocus();
 }
 
+void MainWindow::forResultSlot(){//показать результат в текстовом поле
 
+    if(countclick==0){//самое первое введенное значение
+        previousvalue=ui->lineEdit->text().toDouble();//поместить значение в previousvalue и сделать ее тип double
+    }
+    else{//остальные введенные значения
+        insertvalue=ui->lineEdit->text().toDouble();//поместить значение в previousvalue и сделать ее тип double
+    }
+
+
+
+
+
+    if(sign=='+') {
+        if(countclick==1){//самое первое введенное значение
+            resultvalue=previousvalue+insertvalue;//самое первое действие
+        }
+        else{//остальные введенные значения
+            resultvalue=resultvalue+insertvalue;//остальные действия
+        }
+    }
+
+    else if (sign=='-') {
+        if(countclick==1){//самое первое введенное значение
+            resultvalue=previousvalue-insertvalue;//самое первое действие
+        }
+        else{//остальные введенные значения
+            resultvalue=resultvalue-insertvalue;//остальные действия
+        }
+    }
+
+    else if (sign=='*') {
+        if(countclick==1){//самое первое введенное значение
+            resultvalue=previousvalue*insertvalue;//самое первое действие
+        }
+        else{//остальные введенные значения
+            resultvalue=resultvalue*insertvalue;//остальные действия
+        }
+    }
+
+    else if(sign=='/'){
+        if(countclick==1){//самое первое введенное значение
+            resultvalue=previousvalue/insertvalue;//самое первое действие
+        }
+        else{//остальные введенные значения
+            resultvalue=resultvalue/insertvalue;//остальные действия
+        }
+    }
+
+    else {;
+    }
+
+   ui->lineEdit->setText(QString::number(resultvalue));
+    previousvalue=countclick=0;
+    insertvalue=resultvalue;
+    resultvalue=0;
+   sign=oldsign="";
+}
 
 void MainWindow::forTextReset()//сброс
 {
-      resultvalue=insertvalue=0;
+      resultvalue=insertvalue=previousvalue=countclick=0;
       sign=oldsign="";
-       ui->lineEdit->setText(QString::number(resultvalue));//показ результата в текстовом поле
+
+      ui->lineEdit->setText(QString::number(resultvalue));//показ результата в текстовом поле
       }
 
 void MainWindow::forTextEditResultSlot()//для получения промежуточного результата в текстовом поле
 {
-      ui->textEdit->setText("insertvalue ввел = "+QString::number(insertvalue)+"\n"+"sign = "+sign+"\n"+"oldsign = "+oldsign+"\n"+"resultvalue результат = "+QString::number(resultvalue)+"\n");//показ промежуточного результата в текстовом поле
-}
-
-
-/*
-QObject *obj = new QTimer;          // QTimer inherits QObject
-
-QTimer *timer = qobject_cast<QTimer *>(obj);
-// timer == (QObject *)obj
-
-QAbstractButton *button = qobject_cast<QAbstractButton *>(obj);
-// button == 0
-*/
+      ui->textEdit->setText("previousvalue промежуточное число = "+QString::number(previousvalue)+"\n"+
+                            "insertvalue ввел = "+QString::number(insertvalue)+"\n"+
+                            "resultvalue результат = "+QString::number(resultvalue)+"\n"+
+                            "----------------------------------------"+"\n"+
+                            "oldsign предыдущий знак = "+oldsign+"\n"+
+                            "sign знак= "+sign+"\n"+
+                            "----------------------------------------"+"\n"+
+                            "countclick количество нажатий знаков = "+QString::number(countclick));
+      }

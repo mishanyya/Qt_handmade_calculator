@@ -25,7 +25,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    connect(ui->lineEdit, SIGNAL(editingFinished()), this, SLOT(forValueSlot()));//для сохранения значения после редактирования и нажатия любой кнопки
+    connect(ui->lineEdit, SIGNAL(editingFinished()), this, SLOT(forValueSlot()));//после изменения lineEdit присвоение нового знака операции старому
+
+
+
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(forAllMovieSlot()));         //для арифметической операции
     connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(forAllMovieSlot()));  //для арифметической операции
     connect(ui->pushButton_3, SIGNAL(clicked()), this, SLOT(forAllMovieSlot()));  //для арифметической операции
@@ -82,6 +85,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pushButton_16->setShortcut(Qt::Key_0);
     ui->pushButton_16->setShortcut(42);//запятая
 
+
 }
 
 MainWindow::~MainWindow()
@@ -131,7 +135,7 @@ void MainWindow::forAllMovieSlot()
         else{//остальные введенные значения
             insertvalue=ui->lineEdit->text().replace(',', '.').toDouble();//поместить значение в insertvalue и сделать ее тип double
         }
-
+        oldsign=sign;//присвоение нового значения знака операции старому
         sign=buttonText;//получение знака действия
 
     /*отсюда начинаются арифметические операции*/

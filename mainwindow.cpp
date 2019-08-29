@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    connect(ui->lineEdit, SIGNAL(editingFinished()), this, SLOT(forValueSlot()));//после изменения lineEdit присвоение нового знака операции старому
+    //connect(ui->lineEdit, SIGNAL(editingFinished()), this, SLOT(forValueSlot()));//после изменения lineEdit присвоение нового знака операции старому
 
 
 
@@ -33,6 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(forAllMovieSlot()));  //для арифметической операции
     connect(ui->pushButton_3, SIGNAL(clicked()), this, SLOT(forAllMovieSlot()));  //для арифметической операции
     connect(ui->pushButton_4, SIGNAL(clicked()), this, SLOT(forAllMovieSlot()));    //для арифметической операции
+
     connect(ui->pushButton_5, SIGNAL(clicked()), this, SLOT(forResultSlot()));   //для получения результата
 
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(forTextEditResultSlot()));     //для получения промежуточного результата
@@ -114,131 +115,84 @@ static QString oldsign;//предыдущий знак арифметическ�
 static QString sign;//знак арифметического действия, пишется static, так как получает значение внутри другой функции
 
 static int countclick=0;//количество раз, нажатых на кнопки арифметических действий, пишется static, так как работает внутри другой функции
+static int oldcountclick=0;//количество раз, нажатых на кнопки арифметических действий, при прошлой операции, пишется static, так как работает внутри другой функции
 
-void MainWindow::forValueSlot()//поместить значение в поле
-{
-    oldsign=sign;//присвоение нового значения знака операции старому
-
-}
 
 void MainWindow::forAllMovieSlot()
 {
    QPushButton *buttonSender = qobject_cast<QPushButton *>(sender()); // помещение в указатель buttonSender объекта отправителя
         QString buttonText = buttonSender->text();// помещение в buttonText текст отправителя, на который был создан указатель
-
-        if(countclick==0){//самое первое введенное значение
-       //replace(',', '.') нужно для замены запятой на точку, так как с запятой тип double не работает
-        previousvalue=ui->lineEdit->text().replace(',', '.').toDouble();//поместить значение в previousvalue и сделать ее тип double
-
-            //previousvalue=ui->lineEdit->text().toDouble();//поместить значение в previousvalue и сделать ее тип double
-        }
-        else{//остальные введенные значения
-            insertvalue=ui->lineEdit->text().replace(',', '.').toDouble();//поместить значение в insertvalue и сделать ее тип double
-        }
-        oldsign=sign;//присвоение нового значения знака операции старому
         sign=buttonText;//получение знака действия
 
-    /*отсюда начинаются арифметические операции*/
-    if(oldsign=='+') {
-        if(countclick==1){//самое первое введенное значение
-            resultvalue=previousvalue+insertvalue;//самое первое действие
-        }
-        else{//остальные введенные значения
-            resultvalue=resultvalue+insertvalue;//остальные действия
-        }
-    }
 
-    else if (oldsign=='-') {
-        if(countclick==1){//самое первое введенное значение
-            resultvalue=previousvalue-insertvalue;//самое первое действие
-        }
-        else{//остальные введенные значения
-            resultvalue=resultvalue-insertvalue;//остальные действия
-        }
-    }
 
-    else if (oldsign=='*') {
-        if(countclick==1){//самое первое введенное значение
-            resultvalue=previousvalue*insertvalue;//самое первое действие
-        }
-        else{//остальные введенные значения
-            resultvalue=resultvalue*insertvalue;//остальные действия
-        }
-    }
 
-    else if(oldsign=='/'){
-        if(countclick==1){//самое первое введенное значение
-            resultvalue=previousvalue/insertvalue;//самое первое действие
-        }
-        else{//остальные введенные значения
-            resultvalue=resultvalue/insertvalue;//остальные действия
-        }
-    }
+        if(countclick<1){//если введено только одно первое значение и нажат знак sign
+        previousvalue=ui->lineEdit->text().replace(',', '.').toDouble();//поместить значение в previousvalue и сделать ее тип double
+        resultvalue=previousvalue;
+         }
+        else{//если введено несколько значений и нажат знак sign
+            insertvalue=ui->lineEdit->text().replace(',', '.').toDouble();//поместить значение в insertvalue и сделать ее тип double
 
-    else {;
-    }
-    /*здесь заканчиваются арифметические операции*/
+
+            /*отсюда начинаются операции*/
+
+            if(oldsign=='+') {
+                      resultvalue=resultvalue+insertvalue;
+            }
+            else if (oldsign=='-') {
+                    resultvalue=resultvalue-insertvalue;
+            }
+            else if (oldsign=='*') {
+                    resultvalue=resultvalue*insertvalue;
+            }
+            else if(oldsign=='/'){
+                    resultvalue=resultvalue/insertvalue;
+            }
+            else {
+                ui->lineEdit->setText("Действие не выбрано!!!");
+            }
+            /*здесь заканчиваются арифметические операции*/
+
+        }
+
+
 
     countclick++;
     ui->lineEdit->setText("");
     ui->lineEdit->setFocus();
+    oldsign=sign;//присвоение нового значения знака операции старому
+
+
 }
 
 void MainWindow::forResultSlot(){//показать результат в текстовом поле
 
-    if(countclick==0){//самое первое введенное значение
-        previousvalue=ui->lineEdit->text().toDouble();//поместить значение в previousvalue и сделать ее тип double
+    if(countclick<=1){//если знаков не нажималось, или нажимался только один
+        previousvalue=ui->lineEdit->text().replace(',', '.').toDouble();//поместить значение в previousvalue и сделать ее тип double
+        ui->lineEdit->setText(QString::number(previousvalue));
     }
     else{//остальные введенные значения
         insertvalue=ui->lineEdit->text().toDouble();//поместить значение в previousvalue и сделать ее тип double
+        if(sign=='+'){
+        resultvalue=resultvalue+insertvalue;}
+        else if(sign=='-'){
+        resultvalue=resultvalue-insertvalue;}
+        else if(sign=='*'){
+        resultvalue=resultvalue*insertvalue;}
+        else if(sign=='/'){
+        resultvalue=resultvalue/insertvalue;}
+        else {
+            resultvalue=-1;
+        }
+        ui->lineEdit->setText(QString::number(resultvalue));
     }
 
-    if(sign=='+') {
-        if(countclick==1){//самое первое введенное значение
-            resultvalue=previousvalue+insertvalue;//самое первое действие
-        }
-        else{//остальные введенные значения
-            resultvalue=resultvalue+insertvalue;//остальные действия
-        }
-    }
 
-    else if (sign=='-') {
-        if(countclick==1){//самое первое введенное значение
-            resultvalue=previousvalue-insertvalue;//самое первое действие
-        }
-        else{//остальные введенные значения
-            resultvalue=resultvalue-insertvalue;//остальные действия
-        }
-    }
-
-    else if (sign=='*') {
-        if(countclick==1){//самое первое введенное значение
-            resultvalue=previousvalue*insertvalue;//самое первое действие
-        }
-        else{//остальные введенные значения
-            resultvalue=resultvalue*insertvalue;//остальные действия
-        }
-    }
-
-    else if(sign=='/'){
-        if(countclick==1){//самое первое введенное значение
-            resultvalue=previousvalue/insertvalue;//самое первое действие
-        }
-        else{//остальные введенные значения
-            resultvalue=resultvalue/insertvalue;//остальные действия
-        }
-    }
-
-    else {;
-    }
-
-   ui->lineEdit->setText(QString::number(resultvalue));
-    previousvalue=countclick=0;
+   previousvalue=countclick=0;
     insertvalue=resultvalue;
     resultvalue=0;
    sign=oldsign="";
-
-   ui->lineEdit->setFocus();
 }
 
 void MainWindow::forTextReset()//сброс
@@ -247,6 +201,9 @@ void MainWindow::forTextReset()//сброс
       sign=oldsign="";
 
       ui->lineEdit->setText(QString::number(resultvalue));//показ результата в текстовом поле
+
+      MainWindow::forTextEditResultSlot();
+
       }
 
 void MainWindow::forTextEditResultSlot()//для получения промежуточного результата в текстовом поле
@@ -258,7 +215,8 @@ void MainWindow::forTextEditResultSlot()//для получения промеж
                             "oldsign предыдущий знак = "+oldsign+"\n"+
                             "sign знак= "+sign+"\n"+
                             "----------------------------------------"+"\n"+
-                            "countclick количество нажатий знаков = "+QString::number(countclick));
+                            "countclick количество нажатий знаков = "+QString::number(countclick)+"\n"+
+                            "oldcountclick количество нажатий знаков = "+QString::number(oldcountclick));
 }
 
 void MainWindow::forSymbolEnter()//для ввода цифр в текстовое поле

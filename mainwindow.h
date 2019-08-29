@@ -17,11 +17,13 @@ public:
 
 private slots:  
 
-    void forAllMovieSlot(); // это созданный нами слот для всех операций
-    void forResultSlot(); // это созданный нами слот для получения результата
-    void forTextEditResultSlot(); // это созданный нами слот для получения промежуточного результата
-    void forTextReset(); // это созданный нами слот для обнуления данных
-    void forSymbolEnter(); // это созданный нами слот для ввода цифр в текстовое поле
+    void forAllMovieSlot(); // это слот для всех операций
+    void forTextEditResultSlot(); // это слот для получения промежуточного результата
+    void forTextClean(); // это слот для очистки текстового поля
+    void forTextReset(); // это слот для обнуления данных
+    void forSymbolEnter(); // это слот для ввода цифр в текстовое поле
+
+
 private:
     Ui::MainWindow *ui;
 };
